@@ -66,7 +66,7 @@ class Agent1():
       for bp in geese:
         values[bp] = -10
 
-    for _ in range(10):   # 11 - 1
+    for _ in range(8):
       values_smooth = {}
       for cell in values.keys():
         neighbors = self.adjacent_positions(cell)
@@ -100,7 +100,7 @@ def agent(observation, configuration):
 #   print(configuration) # {rows: 10, columns: 8, inarow: 5}
 
 # Run an episode using the agent above vs the default random agent.
-env.run([agent, agent]), # "random"])
+env.run([agent, agent, agent, agent]), # "random"])
 # print(env.render(mode="ansi", width=500, height=400))
 
 pprint(env.steps)
