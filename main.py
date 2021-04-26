@@ -1,4 +1,4 @@
-from collections import defaultdict
+# from collections import defaultdict
 from kaggle_environments import make
 from kaggle_environments.envs.hungry_geese.hungry_geese import (
   Configuration,
@@ -10,10 +10,9 @@ from kaggle_environments.envs.hungry_geese.hungry_geese import (
 )
 from pprint import pprint
 from collections import deque
-import random
+# import random
 from functools import partial
-
-env = make("hungry_geese")
+import click
 
 class Agent1():
   def __init__(self, configuration):
@@ -70,7 +69,7 @@ class Agent1():
       values_smooth = {}
       for cell in values.keys():
         neighbors = self.adjacent_positions(cell)
-        values_smooth[cell] = values[cell] * 0.8 + sum(values[n] for n in neighbors) * 0.2
+        values_smooth[cell] = values[cell] * 0.9 + sum(values[n] for n in neighbors) / len(neighbors) * 0.1
       values = values_smooth
 
     return values
@@ -99,10 +98,83 @@ def agent(observation, configuration):
 #   print(observation) # {board: [...], mark: 1}
 #   print(configuration) # {rows: 10, columns: 8, inarow: 5}
 
-# Run an episode using the agent above vs the default random agent.
-env.run([agent, agent, agent, agent]), # "random"])
-# print(env.render(mode="ansi", width=500, height=400))
+@click.group()
+def main():
+  pass
 
-pprint(env.steps)
+@main.command()
+def play():
+  env = make("hungry_geese")
 
-# pprint(env.logs)
+  # Run an episode using the agent above vs the default random agent.
+  env.run([agent, agent, agent, agent]), # "random"])
+  # print(env.render(mode="ansi", width=500, height=400))
+
+  # pprint(env.steps)
+
+  # pprint(env.logs)
+
+@main.command()
+def show_board():
+  env = make("hungry_geese")
+
+  # Run an episode using the agent above vs the default random agent.
+  env.run([agent, agent, agent, agent]), # "random"])
+  print(env.render(mode="ansi", width=500, height=400))
+  last_step = env.steps[-1]
+  # pprint(last_step)
+  index = max(range(len(last_step)), key=lambda i: last_step[i]['reward'])
+  agent_obj = dict_with_agents.get(index, None)
+  board_values = agent_obj._find_values_of_cells()
+  for row in range(7):
+    print()
+    row_to_print = []
+    for col in range(11):
+      pos = row * 11 + col
+      row_to_print.append(board_values[pos])
+    print(' '.join(map(lambda x: f'{x:4.2f}', row_to_print)))
+  print()
+
+@main.command()
+def show_possible_next_moves():
+  step = [{'action': 'NORTH',
+                      'info': {},
+                      'observation': {'food': [62, 44],
+                                      'geese': [[56], [73], [75], [25]],
+                                      'index': 0,
+                                      'remainingOverageTime': 60,
+                                      'step': 0},
+                      'reward': 0,
+                      'status': 'ACTIVE'},
+                    {'action': 'NORTH',
+                      'info': {},
+                      'observation': {'index': 1, 'remainingOverageTime': 60},
+                      'reward': 0,
+                      'status': 'ACTIVE'},
+                    {'action': 'NORTH',
+                      'info': {},
+                      'observation': {'index': 2, 'remainingOverageTime': 60},
+                      'reward': 0,
+                      'status': 'ACTIVE'},
+                    {'action': 'NORTH',
+                      'info': {},
+                      'observation': {'index': 3, 'remainingOverageTime': 60},
+                      'reward': 0,
+                      'status': 'ACTIVE'}]
+  env = make("hungry_geese", steps=[step])
+
+
+  print(env.render(mode="ansi", width=500, height=400))
+
+  print("before")
+  pprint(env.state)
+
+  print()
+  env.step(['NORTH', 'NORTH', 'NORTH', 'NORTH'])
+  print(env.render(mode="ansi", width=500, height=400))
+
+  print("after")
+  pprint(env.state)
+
+if __name__ == '__main__':
+  main()
